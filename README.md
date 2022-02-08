@@ -20,7 +20,23 @@ Versatile tool for purple teaming that can give vision on the netowk and hosts, 
 - event logs
 - scheduled tasks/cron jobs
 
+## How To Use?
+ NOTE: windows is preferred, because automation scripts (.bat) exists that facilitate the installation, support for linux will be added in the future.
+- clone the repository
+- make sure postgresql is installed, and create a database for the project
+- update database information in `source_code/central_monitor/central_monitorsettings.py` (username, passowrd, created database name)
+- install upx utility and make sure it is added to the PATH
+- create a virutal environment (recommended) and install all python dependencies using `pip install -r requirements.txt` (requirements.txt is in `source_code` directory)
+- run `source_code/host_agents/windows/MAKE.bat` to compile windows host agent binaries and prepare them to be downloaded (do the same for all other agent types when they will be implemented)
+- run `source_code/central_monitor/_database_initialization.bat` to initialize the database
+- run the command `python manage.py createsuperuser` to create a user that you will use to authenticate when using the central monitor web app
+- run `python manage.py runserver <ip>:<port>` to start the web app
+- run `python manage.py COP_server` to start the cyberoracle protocol master server
+- open the app in a browser and go to settings page and set the settings that you need.
+- you are now ready to go. download and install the agents on hosts and do whatever you please.
+
 ## Notes
+* **This project requires alot of additional work and fine tuning, things are messed up.. but hey, at least it works! and eventually everything will be fixed and organized.
 
 * **The central monitor can be a great target for attacks because it has all the information an attacker would dream about, and some kind of honeypot can be used to catch/identify attacks, so you can focus on one place which is most probably to be attacked**
 
