@@ -1,0 +1,53 @@
+cyber oracle network protocol: 
+*note that v1 uses JSON to carry the data, which takes more bandwidth that it is required to carry the information, can be optimized by using struct
+*socket communication is encrypted with TLSv3
+PDU fields:
+0: protocol version == 1                            # the PDU structure of this protocol may change in future updates, and this is used to ensure compatability and distinction 
+1: PDU_ID                                           # nonce (uuid4) to prevent replay attacks
+2: timestamp                                        # additional techneque to prevent replay attacks (maybe use timestamp as PDU_ID)
+3: signature                                        # authenticate the PDU by applying the signature to the PDU
+4: payload
+    payload_type =
+    {
+        0: KEEPALIVE
+            code =
+            {
+                0 : general keepalive echo              # the host informs the central monitor that the host is still alive, and vice versa
+                1 : general keepalive reply             # reply is sent after receiving echo
+                2 : system_monitor_keepalive,           # sent from central monitor to the host to keep glances system monitor running for the next 5 minutes
+                3 : system_monitor_terminate,           # sent from the central monitor to the host to terminate glances system monitor
+            }
+        1: COMMAND
+            command =
+            {
+                1  : get_shell,                         # open a shell for issuing system commands
+                2  : get_program_data,                  # get data about programs and apps on this host
+                3  : get_process_data,                  # get data about processes running on this host
+                4  : get_passwd_data,                   # dump the hashes of local user passowrds on this host
+                5  : get_privesc_audit,                 # run system audit for privelege escalation vectors on this host
+                7  : run_system_monitor,                # run glances system monitor web server on port 61337 on this host
+                8  : get_system_info,                   # get system information of this host
+                9  : get_network_information,           # get networking information on this host
+                10 : run_network_mapper                 # run nmap on this host to scan all neighboring hosts and return the result
+            }
+        2: SETTINGS
+            action =
+            {
+                0 : settings request,                   # request settings from central monitor
+                1 : settings reply                      # received settings from central monitor
+            }
+        3: AUTHENTICATE
+            action =
+            {
+                0 : authentication_request              # send authentication request to the other side to request its credentials 
+                1 : authentication_response             # send authentication information as requested
+            }
+        4: ALERT
+            alert_data
+        5: ERROR
+            error_code =
+            {
+                0 : general/unknown failure while processing the PDU
+            }
+	      6: DISCOVERY
+    }
