@@ -1,5 +1,5 @@
 # Cyber-Oracle
-Versatile tool for purple teaming that can give vision on the netowk and hosts, it can help identifying any weakpoints that could be used by adversaries to compromise the infrastructure.
+Versatile tool for purple teaming that can give vision in the network and on hosts, it can help identifying any weakpoints that could be used by adversaries to compromise the infrastructure.
 
 ## Cyber Oracle is made of 2 main parts:
 1. The agents
