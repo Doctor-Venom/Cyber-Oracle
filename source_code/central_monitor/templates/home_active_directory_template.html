@@ -1,0 +1,188 @@
+{% extends "home_template.html" %}
+{% load static %}
+
+{% block title %}Host Monitor - Cyber Oracle{% endblock %}
+
+{% block CSS_INCLUDES %}
+<style>
+  .tooltip-inner {
+    max-width: 50vw;
+  }
+</style>
+{% endblock %}
+
+{% block application_content %}
+<div id="active_directory_scan_result">
+  <form>
+    <div class="form-check form-check-inline" data-bs-toggle="tooltip" data-bs-placement="top" title="In a matter of minutes, a report will be produced which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.">
+      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="healtcheck_radio_button" value="healthcheck" checked="true" >
+      <label class="form-check-label" for="healtcheck_radio_button">Active Directory Healthcheck (def)</label>
+    </div>
+
+    <div class="form-check form-check-inline" data-bs-toggle="tooltip" data-bs-placement="top" title="You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner.">
+      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="scanner_radio_button" value="scanner" >
+      <label class="form-check-label" for="scanner_radio_button">Runs a Specific Scanner</label>
+    </div>
+
+    <div class="form-group m-1" id="scanner_options">
+      <select id="scanner_choice" class="form-control">
+        <option value="null" selected>Choose ...</option>
+        <option value="1" title="Check authorization related to users or groups. Default to everyone, authenticated users and domain users">1 - aclcheck</option>
+        <option value="2" title="Check for computers without known antivirus installed. It is used to detect unprotected computers but may also report computers with unknown antivirus.">2 - antivirus</option>
+        <option value="3" title="Get the version of a computer. Can be used to determine if obsolete operating systems are still present.">3 - computerversion</option>
+        <option value="4" title="Use trusts to enumerate users located in domain denied such as bastion or domains too far away.">4 - foreignusers</option>
+        <option value="5" title="Check on the AD if LAPS and/or BitLocker has been enabled for all computers on the domain.">5 - laps_bitlocker</option>
+        <option value="6" title="Enumerate the local administrators of a computer.">6 - localadmin</option>
+        <option value="7" title="Check if null sessions are enabled and provide example(s).">7 - nullsession</option>
+        <option value="8" title="Dump the trusts of a domain via null session if possible">8 - nullsession-trust</option>
+        <option value="9" title="List all IP of the computer via the Oxid Resolver (part of DCOM). No authentication. Used to find other networks such as the one used for administration.">9 - oxidbindings</option>
+        <option value="a" title="Check if a remote desktop solution is installed on the computer.">a - remote</option>
+        <option value="b" title="List all shares published on a computer and determine if the share can be accessed by anyone.">b - share</option>
+        <option value="c" title="Scan a computer and determine the smb version available. Also if SMB signing is active.">c - smb</option>
+        <option value="d" title="List all IP of the computer and the interface speed using SMB3. Authentication required. Used to find other networks such as the one used for administration.">d - smb3querynetwork</option>
+        <option value="e" title="Check if the spooler service is remotely active. The spooler can be abused to get computer tokens when unconstrained delegations are exploited.">e - spooler</option>
+        <option value="f" title="Get the last startup date of a computer. Can be used to determine if latest patches have been applied.">f - startup</option>
+        <option value="g" title="Test for the ZeroLogon vulnerability. Important: the tester must be inside the domain. Trusts cannot be used.">g - zerologon</option>
+      </select>
+    </div>
+
+    <div class="form-group m-1">
+      <input class="form-control" id="domain_or_server_name" type="text" placeholder="Name of a domain or a server">
+    </div>
+    <div class="alert alert-warning m-1" role="alert" id="alert_scan_started">
+      Scan Has Been Launched, Please Stand By. The Report Will Be Displayed In A New Tab When It Is Ready.<br>
+      <strong>WARNING: Do Not Close This Page!</strong>
+    </div>
+    <div class="alert alert-success m-1" role="alert" id="alert_scan_finished">
+      Scan complete! The Report Is Displayed In A New Tab.
+    </div>
+    <button type="button" class="btn btn-warning btn-block w-100" id="run_active_directory_scan">RUN (PingCastle)</button>
+  </form>
+</div>
+{% endblock %}
+
+
+{% block JS_INCLUDES %}
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+        }
+    }
+    return cookieValue;
+  }
+</script>
+<script>
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
+  $("#alert_scan_started").hide();
+  $("#alert_scan_finished").hide();
+
+  if($('#healtcheck_radio_button').is(':checked')){ $("#scanner_options").hide(); }
+  if($('#scanner_radio_button').is(':checked')){ $("#scanner_options").show(); }
+
+  $("#healtcheck_radio_button").on("click", function(){
+    if($('#healtcheck_radio_button').is(':checked')){ $("#scanner_options").hide(); }
+  });
+  $("#scanner_radio_button").on("click", function(){
+    if($('#scanner_radio_button').is(':checked')){ $("#scanner_options").show(); }
+  });
+
+  $("#run_active_directory_scan").on("click", function(){
+    if($('#healtcheck_radio_button').is(':checked')){
+      var target = $("#domain_or_server_name").val();
+      if(target != ""){
+        fetch("/active_directory/", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+              "X-Requested-With": "XMLHttpRequest",
+              "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({
+                option: "healthcheck",
+                target: target
+              })
+        }).then(response => response.json()).then(data => {
+            if (data.success == true) {
+              toastr["success"]("scan complete!");
+              $("#alert_scan_started").hide();
+              $("#alert_scan_finished").show();
+              $("#run_active_directory_scan").prop( "disabled", false );
+              var w = window.open('about:blank');
+              w.document.open();
+              w.document.write(data.msg);
+              w.document.close();
+              //$("#active_directory_scan_result").html(data.msg);
+            } else if (data.success == false) {
+              toastr["error"](data.status_code, data.msg);
+              $("#alert_scan_started").hide()
+              $("#run_active_directory_scan").prop( "disabled", false );
+            }
+        });
+        $("#alert_scan_started").show();
+        $("#alert_scan_finished").hide();
+        $("#run_active_directory_scan").prop( "disabled", true );
+      } else {
+        toastr["error"]('no target specified');
+      }
+    }
+    else if ($('#scanner_radio_button').is(':checked')){
+      var target = $("#domain_or_server_name").val();
+      if(target != ""){
+        var scanner = $("#scanner_choice").val();
+        if(scanner != "null"){
+          fetch("/active_directory/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+                  option: "scanner",
+                  target: target,
+                  scanner: scanner
+                })
+          }).then(response => response.json()).then(data => {
+              if (data.success == true) {
+                toastr["success"]("scan complete!")
+                $("#alert_scan_started").hide();
+                $("#alert_scan_finished").show();
+                $("#run_active_directory_scan").prop( "disabled", false );
+                var w = window.open('about:blank');
+                w.document.open();
+                w.document.write(data.msg);
+                w.document.close();
+                //$("#active_directory_scan_result").html(data.msg);
+              } else if (data.success == false) {
+                $("#alert_scan_started").hide();
+                $("#run_active_directory_scan").prop( "disabled", false );
+                toastr["error"](data.status_code, data.msg);
+              }
+          });
+        $("#alert_scan_started").show();
+        $("#alert_scan_finished").hide();
+        $("#run_active_directory_scan").prop( "disabled", true );
+        } else {
+        toastr["error"]('no scanner specified');
+        }
+      } else {
+        toastr["error"]('no target specified');
+      }
+    }
+  });
+
+</script>
+{% endblock %}

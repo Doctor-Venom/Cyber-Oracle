@@ -1,0 +1,3 @@
+if it is arch linux then use: https://github.com/ilpianista/arch-audit
+if it is BSD linux then use pkg-audit
+if it is debian then use debsecan (although it is said it has serious bugs)

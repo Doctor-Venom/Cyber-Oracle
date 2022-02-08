@@ -1,0 +1,44 @@
+{% extends "base_template.html" %}
+{% load static %}
+
+{% block title %}Downloads - Cyber Oracle{% endblock %}
+
+{% block content %}
+	<div class="container-fluid">
+	<div class="row pt-3 pb-3">
+		<div class="col-md-6">
+			<div class="card" style="background-color:#e9ecef">
+				<div class="row g-0">
+					<div class="col-md-4">
+						<img src="{% static 'windows_logo.png' %}" class="img-fluid rounded-start" alt="Windows Logo">
+					</div>
+					<div class="col-md-8">
+						<div class="card-body">
+							<h5 class="card-title">Windows Host Agent</h5>
+							<p class="card-text">Download Windows Host Agent Installer.</p>
+							<a href="{{ windows_agent_download_link }}" class="btn btn-primary m-1" style="position:absolute; bottom:0; right:0;">Download</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-6">
+			<div class="card" style="background-color:#e9ecef">
+				<div class="row g-0">
+					<div class="col-md-4">
+						<img src="{% static 'linux_logo.png' %}" class="img-fluid rounded-start" alt="Linux Logo">
+					</div>
+					<div class="col-md-8">
+						<div class="card-body">
+							<h5 class="card-title">Linux Host Agent</h5>
+							<p class="card-text">Download Linux Host agent Installer.</p>
+							<a href="{{ linux_agent_download_link }}" class="btn btn-primary m-1" style="position:absolute; bottom:0; right:0;">Download</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+{% endblock %}

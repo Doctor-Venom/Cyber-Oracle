@@ -1,0 +1,9 @@
+Computer	Share	IsEveryoneAllowed
+WIN-1MLHM2RAF4U.test.mysmartlogon.com	ADMIN$	False
+WIN-1MLHM2RAF4U.test.mysmartlogon.com	C$	True
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	ADMIN$	False
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	C$	False
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	CertEnroll	False
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	certificates	False
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	NETLOGON	True
+WIN-PGAHI2ECI8E.test.mysmartlogon.com	SYSVOL	True

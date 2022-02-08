@@ -1,0 +1,44 @@
+{% extends "base_template.html" %}
+{% load static %}
+
+
+{% block title %}Home - Cyber Oracle{% endblock %}
+
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <nav id="left_sidebar" class="left_sidebar col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse min-vh-100">
+                <div class="position-sticky">
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"><span>Applications</span></h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/dashboard/"><i class="fs-4 bi-speedometer2" style="color:hsla(200, 100%, 50%, 1)"></i> Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/host_monitor/"><i class="fs-4 bi-display" style="color:hsla(200, 100%, 50%, 1)"></i> Host Monitor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/network_monitor/"><i class="fs-4 bi-diagram-3" style="color:hsla(200, 100%, 50%, 1)"></i> Network Monitor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/password_cracker/"><i class="fs-4 bi-unlock" style="color:hsla(200, 100%, 50%, 1)"></i> Password Cracker</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/log_analyzer/"><i class="fs-4 bi-graph-up" style="color:hsla(200, 100%, 50%, 1)"></i> Log Analyzer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/active_directory/"><i class="fs-4 bi-bezier" style="color:hsla(200, 100%, 50%, 1)"></i> Active Directory</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom" id="application_content">
+                    {% block application_content %}PRESS ON AN APPLICATION TO VIEW IT HERE{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock %}

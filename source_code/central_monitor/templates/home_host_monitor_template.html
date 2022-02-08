@@ -1,0 +1,59 @@
+{% extends "home_template.html" %}
+{% load static %}
+
+{% block title %}Host Monitor - Cyber Oracle{% endblock %}
+
+{% block application_content %}
+<table class="table table-sm table-striped table-light table-hover table-bordered" id="host_table" style="width:100%;">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col">OS</th>
+              <th scope="col">Host/Domain Name</th>
+              <th scope="col">Register Date</th>
+              <th scope="col">IPv4 Addresses</th>
+              <th scope="col">MAC Addresses</th>
+              <th scope="col">Health</th>
+              <th scope="col">Status</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+{% for host_id, os, host_name, domain_name, register_date, ipv4_addresses, mac_addresses, health, status in host_table_rows_data %}
+            <tr>
+              <td style="text-align: center; vertical-align: middle;">{% if os == "WIN" %}<i class="fab fa-windows"><p hidden>W</p></i>{% elif os == "LIN" %}<i class="fab fa-linux"><p hidden>L</p></i>{% endif %}</td>
+              <td style="text-align: center; vertical-align: middle;">{{host_name}}/{{domain_name}}</td>
+              <td style="text-align: center; vertical-align: middle;">{{register_date|date:"Y-m-d - H:i:s"}}</td>
+              <td style="text-align: center; vertical-align: middle;">{% for ipv4 in ipv4_addresses %}{{ipv4}}<br>{% endfor %}</td>
+              <td style="text-align: center; vertical-align: middle;">{% for mac in mac_addresses %}{{mac}}<br>{% endfor %}</td>
+              <td style="text-align: center; vertical-align: middle;">{{health}}</td>
+              <td style="text-align: center; vertical-align: middle;">
+                {% if status == True %}
+                  <svg width="18px" height="18px"><circle cx="7" cy="7" r="7" fill="#0aff0a"/></svg> Online
+                {% else %}
+                  <svg width="18px" height="18px"><circle cx="7" cy="7" r="7" fill="#ff0a0a"/></svg> Offline
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group" style="width:100%;">
+                  <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/host_detail?host_id={{host_id}}">View host details</a></li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+{% endfor %}
+          </tbody>
+</table>
+
+{% endblock %}
+
+{% block JS_INCLUDES %}
+<script>
+  $(document).ready(function(){ $('#host_table').DataTable();});
+</script>
+{% endblock %}

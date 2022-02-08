@@ -1,0 +1,214 @@
+{% extends "base_template.html" %}
+{% load static %}
+
+{% block title %}Alerts - Cyber Oracle{% endblock %}
+
+{% block CSS_INCLUDES %}
+<style>
+  .tooltip-inner {
+    max-width: 100vw;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="m-1">
+  <table class="table table-sm table-striped table-light table-hover table-bordered" id="alert_table" style="width:100%;">
+    <thead class="table-dark">
+      <tr>
+        <th style="text-align: center;" scope="col">#</th>
+        <th style="text-align: center;" scope="col">(!)</th>
+        <th style="text-align: center;" scope="col">datetime</th>
+        <th style="text-align: center;" scope="col">Source Type</th>
+        <th style="text-align: center;" scope="col">Source Name</th>
+        <th style="text-align: center;" scope="col">Severity Score</th>
+        <th style="text-align: center;" scope="col">Severity Level</th>
+        <th style="text-align: center;" scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+{% for  id, date_time, source_type, source_id, source_name, severity_score, severty_level, is_viewed, general_info in alerts_list %}
+      <tr>
+        <td style="text-align: center; vertical-align: middle;">{{id}}</td>
+        <td style="text-align: center; vertical-align: middle;">{% if is_viewed == True %}<i class="far fa-circle" title="seen" style="color:#2d87e2"></i>{% else %}<i class="fas fa-exclamation-circle" title="unseen" style="color:#2d87e2"></i>{% endif %}</td>
+        <td style="text-align: center; vertical-align: middle;">{{date_time|date:"Y-m-d - H:i:s"}}</td>
+        <td style="text-align: center; vertical-align: middle;">{{source_type}}</td>
+        <td style="text-align: center; vertical-align: middle;">{% if source_type != "Local" %}<a href="/host_detail?host_id={{source_id}}">{{source_name}}</a>{% else %}<a href="#">Local</a>{% endif %}</td>
+        <td style="text-align: center; vertical-align: middle; !important">
+          <svg width="65px" height="25px">
+            <g>
+              <rect class="severity{{severity_score}}" x="0" y="0" rx="15" ry="15" width="65" height="25" style="fill:#777777;"></rect>
+              <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-weight:bold;">{% if severity_score >= 0 and severity_score <= 10 %}{{severity_score}}{% else %}N/A{% endif %}</text>
+            </g>
+          </svg>
+        </td>
+        <td style="text-align: center; vertical-align: middle;" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{general_info}}">{{severty_level}}</td>
+        <td style="text-align: center; vertical-align: middle;">
+          <button class="btn pt-0 pb-0 m-0 view-detail" id="detbtn{{id}}" style="color:#4287f5" title="Show Detail" data-bs-toggle="modal" data-bs-target="#alert_detail_modal" data-bs-whatever="{{id}}"><i class="fas fa-external-link-alt"></i></button>
+          <button class="btn pt-0 pb-0 m-0 delete-row" id="delbtn{{id}}" style="color:#e00b0b"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      </tr>
+{% endfor %}
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-center">
+    <button type="button" class="btn btn-danger btn-block w-25 m-1" id="clear_all_alerts_button">Clear All Alerts</button>
+    <button type="button" class="btn btn-warning btn-block w-25 m-1" id="clear_seen_alerts_button">Clear Seen Alerts</button>
+  </div>
+</div>
+
+<div >
+  <div class="modal fade" id="alert_detail_modal" tabindex="-1" aria-labelledby="alert_detail_modal_label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="alert_detail_modal_label"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block JS_INCLUDES %}
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+        }
+    }
+    return cookieValue;
+  }
+  var table;
+  $(document).ready(function(){ table = $('#alert_table').DataTable();});
+
+  //change icon from seen to unseen when modal opened
+  $('#alert_table').on('click', 'button.view-detail', function () {
+    var alert_id = $(this).attr('id').replace('detbtn','');
+    //table = $(this).closest('table').DataTable();
+    table.cell($(this).parents('tr').index(), 1).data('seen');
+    $(this).parents('tr').children('td')[1].innerHTML = '<i class="far fa-circle" title="seen" style="color:#2d87e2"></i>'
+  });
+
+  //send request to server to delete alert from database and delete the corresponidng row from datatable
+  $('#alert_table').on('click', 'button.delete-row', function () {
+    var alert_id = $(this).attr('id').replace('delbtn','');
+    console.log(alert_id);
+    fetch("/alerts/", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({
+        action:"delete",
+        alert_id:alert_id
+      })
+    }).then(response => response.json()).then(data => {
+      if (data.success == true){
+        table.row($(this).parents('tr')).remove().draw();
+      }
+    });
+  });
+
+  $('#clear_all_alerts_button').on('click', function(){
+    fetch("/alerts/", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({
+        action: "delete",
+        alert_id: "all"
+      })
+    }).then(response => response.json()).then(data => {
+      if (data.success == true){
+        table.clear().draw();
+      }
+    });
+  });
+
+  $('#clear_seen_alerts_button').on('click', function(){
+    fetch("/alerts/", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({
+        action: "delete",
+        alert_id: "seen"
+      })
+    }).then(response => response.json()).then(data => {
+      if (data.success == true){
+        var filteredData = table.rows().indexes().filter( function ( value, index ) {
+          return table.row(value).data()[1] == 'seen'; 
+        });
+
+        table.rows( filteredData ).remove().draw();
+      }
+    });
+  });
+</script>
+
+<script>
+  function getseverityColor(value) {
+    var hue = ((1 - (value/10)) * 120).toString(10);
+    return ["hsl(", hue, ",100%,50%)"].join("");
+  }
+
+  for (let i = 0; i <= 10; i++) {
+    try {$(`.severity${i}`).css("fill", getseverityColor(i));}
+    catch {}
+  }
+
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+</script>
+
+<script>
+    var AlertDetailModal = document.getElementById('alert_detail_modal');
+    AlertDetailModal.addEventListener('show.bs.modal', function (event) {
+      // Button that triggered the modal
+      var modalTriggerButton = event.relatedTarget;
+      // Extract info from data-bs-* attributes
+      var alert_id = modalTriggerButton.getAttribute('data-bs-whatever');
+      AlertDetailModal.querySelector('.modal-title').textContent = "Alert #" + alert_id;
+        // If necessary, you could initiate an AJAX request here and then do the updating in a callback.
+        fetch(`/alerts?alert_id=${alert_id}`, {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        }).then(response => response.text()).then(data => {
+            // Update the modal's content.
+            AlertDetailModal.querySelector(".modal-body").innerHTML = data;
+        });
+    })
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "home_template.html" %}
+{% load static %}
+
+
+{% block title %}Network Monitor - Cyber Oracle{% endblock %}
+
+
+{% block CSS_INCLUDES %}
+  <style type="text/css">
+    #networkMap {
+      width: 100%;
+      height: 90vh;
+      border: 2px solid lightgray;
+      background-color: hsla(0, 0%, 75%, 0.75);
+    }
+  </style>
+{% endblock %}
+
+
+{% block application_content %}
+    <!--NETWORK MONITOR APPLICATION VIEW https://visjs.github.io/vis-network/examples/-->
+    <div id="networkMap"></div>
+{% endblock %}
+
+
+{% block JS_INCLUDES %}
+    <script type="text/javascript" src="{% static 'JS/vis-network.min.js' %}"></script>
+    <script>
+    // create an array with nodes
+    var nodes = new vis.DataSet([
+{% for ID, LABEL, TITLE, GROUP in nodes %}
+    { id: {{ID}}, label: "{{LABEL}}", title: "{{TITLE}}".split("||").join("\n"), cid:"{{GROUP}}", shape: "box", group:"net{{GROUP}}" },
+{% endfor %}
+    ]);
+
+    // create an array with edges
+    var edges = new vis.DataSet([
+{% for FROM, TO in edges %}
+    { from: {{FROM}}, to: {{TO}} },
+{% endfor %}
+    ]);
+
+    // create a network
+    var container = document.getElementById("networkMap");
+    var data = {nodes:nodes, edges:edges,};
+    var options = { 
+        edges:{ arrows: { to: { enabled: true, scaleFactor: 0.5, type: "arrow" } } },
+        groups: { net1: {color:{background:"#E52B50"}},net2: {color:{background:"#FFBF00"}},net3: {color:{background:"#9966CC"}},net4: {color:{background:"#FBCEB1"}},net5: {color:{background:"#7FFFD4"}},net6: {color:{background:"#007FFF"}},net7: {color:{background:"#89CFF0"}},net8: {color:{background:"#F5F5DC"}},net9: {color:{background:"#CB4154"}},net10: {color:{background:"#000000"}},net11: {color:{background:"#0000FF"}},net12: {color:{background:"#0095B6"}},net13: {color:{background:"#8A2BE2"}},net14: {color:{background:"#DE5D83"}},net15: {color:{background:"#CD7F32"}},net16: {color:{background:"#964B00"}},net17: {color:{background:"#800020"}},net18: {color:{background:"#702963"}},net19: {color:{background:"#960018"}},net20: {color:{background:"#DE3163"}},net21: {color:{background:"#007BA7"}},net22: {color:{background:"#F7E7CE"}},net23: {color:{background:"#7FFF00"}},net24: {color:{background:"#7B3F00"}},net25: {color:{background:"#0047AB"}},net26: {color:{background:"#6F4E37"}},net27: {color:{background:"#B87333"}},net28: {color:{background:"#FF7F50"}},net29: {color:{background:"#DC143C"}},net30: {color:{background:"#00FFFF"}},net31: {color:{background:"#EDC9Af"}},net32: {color:{background:"#7DF9FF"}},net33: {color:{background:"#50C878"}},net34: {color:{background:"#00FF3F"}},net35: {color:{background:"#FFD700"}},net36: {color:{background:"#808080"}},net37: {color:{background:"#008000"}},net38: {color:{background:"#3FFF00"}},net39: {color:{background:"#4B0082"}},net40: {color:{background:"#FFFFF0"}},net41: {color:{background:"#00A86B"}},net42: {color:{background:"#29AB87"}},net43: {color:{background:"#B57EDC"}},net44: {color:{background:"#FFF700"}},net45: {color:{background:"#C8A2C8"}},net46: {color:{background:"#BFFF00"}},net47: {color:{background:"#FF00FF"}},net48: {color:{background:"#FF00AF"}},net49: {color:{background:"#800000"}},net50: {color:{background:"#E0B0FF"}},net51: {color:{background:"#000080"}},net52: {color:{background:"#CC7722"}},net53: {color:{background:"#808000"}},net54: {color:{background:"#FF6600"}},net55: {color:{background:"#FF4500"}},net56: {color:{background:"#DA70D6"}},net57: {color:{background:"#FFE5B4"}},net58: {color:{background:"#D1E231"}},net59: {color:{background:"#CCCCFF"}},net60: {color:{background:"#1C39BB"}},net61: {color:{background:"#FD6C9E"}},net62: {color:{background:"#8E4585"}},net63: {color:{background:"#003153"}},net64: {color:{background:"#CC8899"}},net65: {color:{background:"#800080"}},net66: {color:{background:"#E30B5C"}},net67: {color:{background:"#FF0000"}},net68: {color:{background:"#C71585"}},net69: {color:{background:"#FF007F"}},net70: {color:{background:"#E0115F"}},net71: {color:{background:"#FA8072"}},net72: {color:{background:"#92000A"}},net73: {color:{background:"#0F52BA"}},net74: {color:{background:"#FF2400"}},net75: {color:{background:"#C0C0C0"}},net76: {color:{background:"#708090"}},net77: {color:{background:"#A7FC00"}},net78: {color:{background:"#00FF7F"}},net79: {color:{background:"#D2B48C"}},net80: {color:{background:"#483C32"}},net81: {color:{background:"#008080"}},net82: {color:{background:"#40E0D0"}},net83: {color:{background:"#3F00FF"}},net84: {color:{background:"#7F00FF"}},net85: {color:{background:"#40826D"}},net86: {color:{background:"#FFFFFF"}},net87: {color:{background:"#FFFF00"}}, }
+        }
+    var network = new vis.Network(container, data, options);
+
+    </script>
+{% endblock %}

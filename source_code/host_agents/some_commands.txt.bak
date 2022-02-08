@@ -1,0 +1,57 @@
+[[[WINDOWS]]]
+PROGRAM DATA:
+
+Get-WmiObject -Class "Win32_Product" | Export-CSV (Join-Path $home "Win32_Product.csv")
+Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, UninstallString | Export-CSV (Join-Path $home "Win32_Product.csv")
+
+wmic product get name,version
+wmic softwareelement get name,version
+wmic softwarefeature get name,version
+
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /reg:32 /s
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /reg:64 /s
+
+PROCESS DATA:
+wmic process get ProcessID,ExecutablePath
+Get-Process * | Select-Object Path
+
+PASSWORD HASHES:
+https://pure.security/dumping-windows-credentials/
+reg.exe save hklm\sam c:\temp\sam.save
+reg.exe save hklm\security c:\temp\security.save
+reg.exe save hklm\system c:\temp\system.save
+
+SCHEDULED TASKS:
+Get-ScheduledTask | ConvertTo-Csv
+
+LOGS:
+https://stackify.com/13-ways-to-tail-a-log-file-on-windows-unix/
+Get-WinEvent -ListLog * | ForEach-Object{ Get-WinEvent -ErrorAction SilentlyContinue -FilterHashTable @{LogName=$_.Logname; Level=1,2,3,4; StartTime=(Get-Date).AddHours(-1)}} | Select-Object TimeCreated,LogName,ProviderName,Id,LevelDisplayName,Message | Sort TimeCreated | ConvertTo-Csv
+
+
+________________
+[[[LINUX]]]
+PROGRAM DATA:
+using package manager or other utilities
+
+PROCESS DATA:
+ls -l /proc/*/exe
+ps ax -o pid,cmd
+ps auxwwwe
+
+PASSWORD HASHES:
+cat /etc/shadow
+
+SCHEDULED TASKS:
+https://stackoverflow.com/a/137173
+for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l 2>/dev/null | grep -v '^#'; done
+
+LOGS:
+https://www.loggly.com/ultimate-guide/linux-logging-basics/
+
+########################################
+RELATED LINKS:
+https://developers.virustotal.com/v3.0/reference#file-info
+https://freerainbowtables.com/
+https://wazuh.com/blog/detecting-vulnerable-software-on-linux-systems/
+https://www.zabbix.com/features#metric_collection

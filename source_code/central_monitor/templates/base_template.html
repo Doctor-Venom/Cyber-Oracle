@@ -1,0 +1,83 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+    <!-- CSS -->
+    <link href="{% static 'CSS/bootstrap5.1.0.min.css' %}" rel="stylesheet">
+    <link href="{% static 'CSS/bootstrap-icons1.7.2.css' %}" rel="stylesheet">
+    <link href="{% static 'CSS/fontawesome5.min.css' %}" rel="stylesheet">
+    <link href="{% static 'CSS/dataTables1.11.1.bootstrap5.min.css' %}" rel="stylesheet">
+    <link href="{% static 'CSS/toastr.min.css' %}" rel="stylesheet">
+    {% block CSS_INCLUDES %}{% endblock %}
+    <title>{% block title %}Cyber Oracle{% endblock %}</title>
+</head>
+
+
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-0" >
+        <a class="navbar-brand col-2 text-center" href="#"><img src="{% static 'Cyber_Oracle.png' %}" alt="Cyber Oracle" height="100%", width="100%"></img></a>
+        <div class="collapse navbar-collapse col-9 d-flex justify-content-end" id="top_navbar">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a href="/" class="nav-link px-4 text-white"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="/alerts" class="nav-link px-4 text-white"><i class="fas fa-exclamation-triangle"></i> Alerts</a></li>
+                <li class="nav-item"><a href="/downloads/" class="nav-link px-4 text-white"><i class="fas fa-download"></i> Downloads</a></li>
+                <li class="nav-item"><a href="/settings/" class="nav-link px-4 text-white"><i class="fas fa-cog"></i> Settings</a></li>
+                <li class="nav-item"><a href="/admin/" class="nav-link px-4 text-white"><i class="fas fa-user-shield"></i> Admin</a></li>
+                <li class="nav-item"><a href="/admin/logout/" class="nav-link px-4 text-white"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="d-flex justify-content-center" id="loading_screen" style="opacity:1; background-color:white; position:fixed; z-index:99; height:100%; width:100%; top:0; left:0;">
+        <div class="d-flex flex-column justify-content-center">
+            <div class="spinner-border"  style="width:25vh;height:25vh;" role="status">
+                <span class="sr-only"></span>
+            </div>
+        </div>
+    </div>
+    {% block content %}{% endblock %}
+
+    <!-- JS -->
+    <script src="{% static 'JS/bootstrap5.1.0.bundle.min.js' %}"></script>
+    <!--<script src="{% static 'JS/fontawesome259786bfe4.js' %}"></script>-->
+    <!--<script src="{% static 'JS/jquery2.2.1.min.js' %}"></script>-->
+    <script src="{% static 'JS/jquery-3.5.1.min.js' %}"></script>
+    <script src="{% static 'JS/jquery.dataTables1.11.1.min.js' %}"></script>
+    <script src="{% static 'JS/dataTables1.11.1.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'JS/toastr.min.js' %}"></script>
+    <script>
+        toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "800",
+        "timeOut": "3000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+        }
+    </script>
+
+    {% block JS_INCLUDES %}{% endblock %}
+    <script>
+        $('#loading_screen').remove();
+    </script>
+</body>
+
+</html>

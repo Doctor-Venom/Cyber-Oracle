@@ -1,0 +1,319 @@
+{% extends "base_template.html" %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block CSS_INCLUDES %}
+<style>
+    .form-switch.form-switch-xxl .form-check-input {
+    height: 3rem;
+    width: calc(4rem + 1rem);
+    border-radius: 6rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-dark jumbotron-fluid m-0 p-3" style="height:100%;"> <!--if you think it looks bad, just remove bg-dark-->
+    
+    <div class="card" style="background-color:#e9ecef">
+        <form action="/settings/" method="POST">{% csrf_token %}
+            <div class="form-group row m-1">
+                <div class="d-flex justify-content-center">
+                    <h3>Central Monitor Settings</h3>
+                </div>
+            </div>
+
+            <div class="form-group row m-1">
+                <label for="ADMIN_EMAIL_ADDRESSES" class="col-sm-2 col-form-label">Admin Email Addresses</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="ADMIN_EMAIL_ADDRESSES" name="ADMIN_EMAIL_ADDRESSES" placeholder="ADMIN_EMAIL_ADDRESSES" required value="{{ADMIN_EMAIL_ADDRESSES}}">
+                </div>
+            </div>
+
+            <div class="form-group row ms-2 me-2 mt-0 mb-1">
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="NOTIFICATION_SERVICE_EMAIL" name="NOTIFICATION_SERVICE_EMAIL" placeholder="NOTIFICATION_SERVICE_EMAIL" required value="{{NOTIFICATION_SERVICE_EMAIL}}">
+                    <label for="NOTIFICATION_SERVICE_EMAIL" class="">Notification Service Email</label>
+                </div>
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="NOTIFICATION_SERVICE_PASSWORD" name="NOTIFICATION_SERVICE_PASSWORD" placeholder="NOTIFICATION_SERVICE_PASSWORD" required value="{{NOTIFICATION_SERVICE_PASSWORD}}">
+                    <label for="NOTIFICATION_SERVICE_PASSWORD" class="">Notification Service Password</label>
+                </div>
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE" name="NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE" placeholder="NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE" required value="{{NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE}}">
+                    <label for="NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE" class="">Notification Minimum Alert Severity Score</label>
+                </div>
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <i></i><!-- this <i> is needed to prevent selecting text from previous and next input boxes... -->
+                    <div class="form-check form-switch form-switch-xxl">
+                        <input class="form-check-input" type="checkbox" id="EMAIL_ALERT_NOTIFICATION" title="Email Alert Notifications">
+                    </div>
+                    <i></i><!-- this <i> is needed to prevent selecting text from previous and next input boxes... -->
+                </div>
+            </div>
+
+            <div class="form-group row ms-2 me-2 mt-0 mb-0">
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="VIRUSTOTAL_API_KEY" name="VIRUSTOTAL_API_KEY" placeholder="VIRUSTOTAL_API_KEY" required value="{{VIRUSTOTAL_API_KEY}}">
+                    <label for="VIRUSTOTAL_API_KEY" class="">VirusTotal API Key</label>
+                </div>
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="PROJECT_HONEYPOT_API_KEY" name="PROJECT_HONEYPOT_API_KEY" placeholder="PROJECT_HONEYPOT_API_KEY" required value="{{PROJECT_HONEYPOT_API_KEY}}">
+                    <label for="PROJECT_HONEYPOT_API_KEY" class="">Project Honeypot API Key</label>
+                </div>
+                <div class="form-floating col-3 ps-0 pe-1">
+                    <input type="text" class="form-control" id="SHODAN_API_KEY" name="SHODAN_API_KEY" placeholder="SHODAN_API_KEY" required value="{{SHODAN_API_KEY}}">
+                    <label for="SHODAN_API_KEY" class="">Shodan API Key</label>
+                </div>
+            </div>
+
+            <div class="form-group row m-1">
+                <div class="col-sm-12">
+                    <button type="button" class="btn btn-primary btn-block w-100 mt-1" id="save_central_monitor_settings_button">Save Settings</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card mt-3" style="background-color:#e9ecef">
+            <form action="/settings/" method="POST">{% csrf_token %}
+                <div class="form-group row m-1">
+                    <div class="d-flex justify-content-center">
+                        <h3>Default Host Agent Settings</h3>
+                    </div>
+                </div>
+                <div class="form-group row m-1">
+                    <label for="CENTRAL_MONITOR_ID" class="col-sm-2 col-form-label">Central monitor ID</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="CENTRAL_MONITOR_ID" name="CENTRAL_MONITOR_ID" placeholder="CENTRAL_MONITOR_ID" required value="{{CENTRAL_MONITOR_ID}}" readonly>
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-warning" style="width:100%;padding:5%;" onclick="gen_new_cm_uuidv4()"><i class="bi bi-exclamation-triangle-fill"></i> New ID</button> 
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-secondary" style="width:100%;padding:5%;" onclick="reset_cm_uuidv4()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button> 
+                    </div>
+                </div>
+                <div class="form-group row m-1">
+                    <label for="AGENT_AUTH_USERNAME" class="col-sm-2 col-form-label">Default agent auth username</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="AGENT_AUTH_USERNAME" name="AGENT_AUTH_USERNAME" placeholder="AGENT_AUTH_USERNAME" required value="{{AGENT_AUTH_USERNAME}}" readonly>
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-warning" style="width:100%;padding:5%;" onclick="gen_uname()">Generate</button> 
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-secondary" style="width:100%;padding:5%;" onclick="reset_uname()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button> 
+                    </div>
+                </div>
+                <div class="form-group row m-1">
+                    <label for="AGENT_AUTH_PASSWORD" class="col-sm-2 col-form-label">Default agent auth password</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="AGENT_AUTH_PASSWORD" name="AGENT_AUTH_PASSWORD" placeholder="AGENT_AUTH_PASSWORD" required value="{{AGENT_AUTH_PASSWORD}}" readonly>
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-warning" style="width:100%;padding:5%;" onclick="gen_passwd()">Generate</button> 
+                    </div>
+                    <div class="col-sm-1 ps-0 d-flex align-items-center">
+                        <button type="button" class="btn btn-secondary" style="width:100%;padding:5%;" onclick="reset_passwd()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button> 
+                    </div>
+                </div>
+
+                <div class="form-group row ms-2 me-2 mt-0 mb-0">
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="CENTRAL_MONITOR_BASE_URL" name="CENTRAL_MONITOR_BASE_URL" placeholder="CENTRAL_MONITOR_BASE_URL" required value="{{CENTRAL_MONITOR_BASE_URL}}" title="Either an IP address with port like [ X.X.X.X:PORT_NUMBER ] or a Hostname like [ google.com:PORT_NUMBER ]">
+                        <label for="CENTRAL_MONITOR_BASE_URL" class="">Central monitor base URL</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="SYSTEM_MONITOR_PORT" name="SYSTEM_MONITOR_PORT" placeholder="SYSTEM_MONITOR_PORT" required value="{{SYSTEM_MONITOR_PORT}}">
+                        <label for="SYSTEM_MONITOR_PORT" class="">System monitor port</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="TCP_HONEYPOT_PORTS" name="TCP_HONEYPOT_PORTS" placeholder="TCP_HONEYPOT_PORTS" required value="{{TCP_HONEYPOT_PORTS}}">
+                        <label for="TCP_HONEYPOT_PORTS" class="">TCP honeypot ports</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="UDP_HONEYPOT_PORTS" name="UDP_HONEYPOT_PORTS" placeholder="UDP_HONEYPOT_PORTS" required value="{{UDP_HONEYPOT_PORTS}}">
+                        <label for="UDP_HONEYPOT_PORTS" class="">UDP honeypot ports</label>
+                    </div>
+                </div>
+
+                <div class="form-group row ms-2 me-2 mt-1 mb-1">
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="NETWORK_INFO_UPDATES_FREQ" name="NETWORK_INFO_UPDATES_FREQ" placeholder="NETWORK_INFO_UPDATES_FREQ" required value="{{NETWORK_INFO_UPDATES_FREQ}}">
+                        <label for="NETWORK_INFO_UPDATES_FREQ" class="">Network info updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="EVENT_LOGS_UPDATES_FREQ" name="EVENT_LOGS_UPDATES_FREQ" placeholder="EVENT_LOGS_UPDATES_FREQ" required value="{{EVENT_LOGS_UPDATES_FREQ}}">
+                        <label for="EVENT_LOGS_UPDATES_FREQ" class="">Event logs updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="PROC_DATA_UPDATES_FREQ" name="PROC_DATA_UPDATES_FREQ" placeholder="PROC_DATA_UPDATES_FREQ" required value="{{PROC_DATA_UPDATES_FREQ}}">
+                        <label for="PROC_DATA_UPDATES_FREQ" class="">Process data updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="SYSTEM_INFO_UPDATES_FREQ" name="SYSTEM_INFO_UPDATES_FREQ" placeholder="SYSTEM_INFO_UPDATES_FREQ" required value="{{SYSTEM_INFO_UPDATES_FREQ}}">
+                        <label for="SYSTEM_INFO_UPDATES_FREQ" class="">System info updates freq</label>
+                    </div>
+                </div>
+
+                <div class="form-group row ms-2 me-2 mt-0 mb-1">
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="NMAP_UPDATES_FREQ" name="NMAP_UPDATES_FREQ" placeholder="NMAP_UPDATES_FREQ" required value="{{NMAP_UPDATES_FREQ}}">
+                        <label for="NMAP_UPDATES_FREQ" class="">Network map updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="PROG_DATA_UPDATES_FREQ" name="PROG_DATA_UPDATES_FREQ" placeholder="PROG_DATA_UPDATES_FREQ" required value="{{PROG_DATA_UPDATES_FREQ}}">
+                        <label for="PROG_DATA_UPDATES_FREQ" class="">Program data updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="SCHEDULED_TASKS_UPDATES_FREQ" name="SCHEDULED_TASKS_UPDATES_FREQ" placeholder="SCHEDULED_TASKS_UPDATES_FREQ" required value="{{SCHEDULED_TASKS_UPDATES_FREQ}}">
+                        <label for="SCHEDULED_TASKS_UPDATES_FREQ" class="">Scheduled tasks updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="PASSWD_DATA_UPDATES_FREQ" name="PASSWD_DATA_UPDATES_FREQ" placeholder="PASSWD_DATA_UPDATES_FREQ" required value="{{PASSWD_DATA_UPDATES_FREQ}}">
+                        <label for="PASSWD_DATA_UPDATES_FREQ" class="">Passwords data updates freq</label>
+                    </div>
+                </div>
+
+                <div class="form-group row ms-2 me-2 mt-0 mb-1">
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="PRIVESC_UPDATES_FREQ" name="PRIVESC_UPDATES_FREQ" placeholder="PRIVESC_UPDATES_FREQ" required value="{{PRIVESC_UPDATES_FREQ}}">
+                        <label for="PRIVESC_UPDATES_FREQ" class="">Privesc updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 ps-0 pe-1">
+                        <input type="text" class="form-control" id="EXPLOIT_UPDATES_FREQ" name="EXPLOIT_UPDATES_FREQ" placeholder="EXPLOIT_UPDATES_FREQ" required value="{{EXPLOIT_UPDATES_FREQ}}">
+                        <label for="EXPLOIT_UPDATES_FREQ" class="">Exploit suggestor updates freq</label>
+                    </div>
+                </div>
+                <div class="form-group row m-1">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-primary btn-block w-100 mt-1" id="save_host_agent_settings_button">Save Settings</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block JS_INCLUDES %}
+<script>
+    function gen_new_cm_uuidv4() {
+        const a = crypto.getRandomValues(new Uint16Array(8));
+        let i = 0;
+        document.getElementById("CENTRAL_MONITOR_ID").value = '00000000'.replace(/[^-]/g, s => (a[i++] + s * 0x10000 >> s).toString(16).padStart(4, '0')
+        );}
+
+    function gen_uname() {
+        const a = crypto.getRandomValues(new Uint16Array(8));
+        let i = 0;
+        document.getElementById("AGENT_AUTH_USERNAME").value = 'AGENT_REGISTRAR_'+'0000'.replace(/[^-]/g, s => (a[i++] + s * 0x10000 >> s).toString(16).padStart(4, '0')
+        );}
+
+    function gen_passwd() {
+        const a = crypto.getRandomValues(new Uint16Array(8));
+        let i = 0;
+        document.getElementById("AGENT_AUTH_PASSWORD").value = '00000000'.replace(/[^-]/g, s => (a[i++] + s * 0x10000 >> s).toString(16).padStart(4, '0')
+        );}
+
+    function reset_cm_uuidv4() { document.getElementById("CENTRAL_MONITOR_ID").value = "{{CENTRAL_MONITOR_ID}}"; }
+    function reset_uname() { document.getElementById("AGENT_AUTH_USERNAME").value = "{{AGENT_AUTH_USERNAME}}"; }
+    function reset_passwd() { document.getElementById("AGENT_AUTH_PASSWORD").value = "{{AGENT_AUTH_PASSWORD}}"; }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+            }
+        }
+        return cookieValue;
+    }
+
+    // update central monitor settings
+    $("#save_central_monitor_settings_button").on("click", function(){
+        fetch("/settings/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+                action: "CMSU",
+                settings: {
+                    CENTRAL_MONITOR_ID: $("#CENTRAL_MONITOR_ID").val(),
+                    ADMIN_EMAIL_ADDRESSES: $("#ADMIN_EMAIL_ADDRESSES").val(),
+                    NOTIFICATION_SERVICE_EMAIL: $("#NOTIFICATION_SERVICE_EMAIL").val(),
+                    NOTIFICATION_SERVICE_PASSWORD: $("#NOTIFICATION_SERVICE_PASSWORD").val(),
+                    NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE: $("#NOTIFICATOIN_MINIMUM_ALERT_SEVERITY_SCORE").val(),
+                    EMAIL_ALERT_NOTIFICATION: $("#EMAIL_ALERT_NOTIFICATION").is(":checked"),
+                    VIRUSTOTAL_API_KEY: $("#VIRUSTOTAL_API_KEY").val(),
+                    PROJECT_HONEYPOT_API_KEY: $("#PROJECT_HONEYPOT_API_KEY").val(),
+                    SHODAN_API_KEY: $("#SHODAN_API_KEY").val()
+                }
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.success == true) {
+                toastr["success"]("Central Monitor Settings Saved.")
+            } else if (data.success == false) {
+                if (data.status_code == 404) {
+                    toastr["error"]("Error Saving Central Monitor Settings.")
+                }
+            }
+        });
+    });
+    
+    // update host agent settings
+    $("#save_host_agent_settings_button").on("click", function(){
+        fetch("/settings/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+                action: "HASU",
+                settings: {
+                    CENTRAL_MONITOR_ID: $("#CENTRAL_MONITOR_ID").val(),
+                    AGENT_AUTH_USERNAME: $("#AGENT_AUTH_USERNAME").val(),
+                    AGENT_AUTH_PASSWORD: $("#AGENT_AUTH_PASSWORD").val(),
+                    CENTRAL_MONITOR_BASE_URL: $("#CENTRAL_MONITOR_BASE_URL").val(),
+                    SYSTEM_MONITOR_PORT: $("#SYSTEM_MONITOR_PORT").val(),
+                    TCP_HONEYPOT_PORTS: $("#TCP_HONEYPOT_PORTS").val(),
+                    UDP_HONEYPOT_PORTS: $("#UDP_HONEYPOT_PORTS").val(),
+                    NETWORK_INFO_UPDATES_FREQ: $("#NETWORK_INFO_UPDATES_FREQ").val(),
+                    EVENT_LOGS_UPDATES_FREQ: $("#EVENT_LOGS_UPDATES_FREQ").val(),
+                    PROC_DATA_UPDATES_FREQ: $("#PROC_DATA_UPDATES_FREQ").val(),
+                    SYSTEM_INFO_UPDATES_FREQ: $("#SYSTEM_INFO_UPDATES_FREQ").val(),
+                    NMAP_UPDATES_FREQ: $("#NMAP_UPDATES_FREQ").val(),
+                    PROG_DATA_UPDATES_FREQ: $("#PROG_DATA_UPDATES_FREQ").val(),
+                    SCHEDULED_TASKS_UPDATES_FREQ: $("#SCHEDULED_TASKS_UPDATES_FREQ").val(),
+                    PASSWD_DATA_UPDATES_FREQ: $("#PASSWD_DATA_UPDATES_FREQ").val(),
+                    PRIVESC_UPDATES_FREQ: $("#PRIVESC_UPDATES_FREQ").val(),
+                    EXPLOIT_UPDATES_FREQ: $("#EXPLOIT_UPDATES_FREQ").val(),
+                }
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.success == true) {
+                toastr["success"]("Default Host Agent Settings Saved.")
+            } else if (data.success == false) {
+                if (data.status_code == 404) {
+                    toastr["error"]("Error Saving Default Host Agent Settings.")
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

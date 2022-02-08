@@ -1,0 +1,41 @@
+the agent collects 4 types of information about the host:
+1.general activity information (not important but can be useful when investigating incidents)
+2.user information (information about the user and the groups he is part of)
+3.system information (information about the system and its components/apps/services/files and policies and settings)
+4.neighborhood information (information about neighboring devices on all connected networks)
+
+this information is structured in JSON format and encrypted then sent to the central monitor
+ideas for information to be collected: http://itdoc.hitachi.co.jp/manuals/3021/3021333700e/DMDS0045.HTM
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+[1] GENERAL ACTIVITY INFORMATION (sent each minute to the central monitor, only things that were changed since last time will be sent):
+1.CPU, RAM, GPU, Disk, Network load information
+2.ARP table and adapter information
+3.DNS cache entries 
+4.Internet settings including proxy configs
+5.UDP connections and associated processes and services
+6.TCP connections and associated processes and services
+7.idle time (the number of seconds since the current user's last input.)
+8.last shutdown
+9.scheduled tasks / cron jobs
+10.system time
+11.IP Routing Table
+
+
+[2] USER INFORMATION (will be sent every 1 hour, sent only if anything changed):
+1.logged in user names
+2.logged in users' groups
+
+
+[3] SYSTEM INFORMATION (will be sent every 1 hour, sent only if anything changed):
+1.list of processes and their details
+2.list of installed programs and their details
+3.hashed passwords of all users
+4.results of linenu/winenum scripts and arch-audit and lynis
+5.results of linux_exploit_suggester/windows_exploit_suggester scripts
+5.os information and whether it is a server machine
+6.Computer Name / Host Name
+7.UUID/Serial #/CPU/BIOS Information/Total Memory/Total Free Space/
+8.The total number of logical drives.
+9.network information (IP Address/Subnet Mask/The name of the network adapter./The MAC address of the device./The address of the DNS server./The address of the DHCP server if any/Lease Acquisition and Expiration time/Domain
+

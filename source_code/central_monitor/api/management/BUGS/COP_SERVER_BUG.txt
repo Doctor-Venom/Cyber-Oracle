@@ -1,0 +1,2 @@
+[SOLVED] the COP server is a crazy piece of code! takes 50%+ of CPU and couple gigas of RAM to run and makes millon connections to postgres database and to a single agent.. man this must be fixed ASAP!!!!
+* 2 new persistent connections are made one to database and one to COP server each time an agent sends COP_PDU to the server

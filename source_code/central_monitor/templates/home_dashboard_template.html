@@ -1,0 +1,24 @@
+{% extends "home_template.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Cyber Oracle{% endblock %}
+
+{% block application_content %}
+<!--DASHBOARD APPLICATION VIEW-->
+<!--https://www.logsign.com/blog/what-are-the-types-of-dashboards-in-a-siem-solution/-->
+<div class="col-md-12">
+    <div class="card" style="background-color:#e9ecef">
+        <div class="row g-0">
+            <div class="col-md-4 p-1">
+                <img src="{% static 'windows_logo.png' %}" class="img-fluid rounded-start" alt="Windows Logo">
+            </div>
+            <div class="col-md-4 p-1">
+                <img src="{% static 'windows_logo.png' %}" class="img-fluid rounded-start" alt="Windows Logo">
+            </div>
+            <div class="col-md-4 p-1">
+                <img src="{% static 'windows_logo.png' %}" class="img-fluid rounded-start" alt="Windows Logo">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

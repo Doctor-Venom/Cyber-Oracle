@@ -1,0 +1,845 @@
+{% extends "base_template.html" %}
+{% load static %}
+
+{% block title %}Host Details{% endblock %}
+
+{% block CSS_INCLUDES %}
+  <link href="{% static 'CSS/bstreeview.min.css' %}" rel="stylesheet" />
+  <link href="{% static 'CSS/xterm.css' %}" rel="stylesheet" />
+  <style type="text/css">
+    #hostNeighborMap {
+      width: 100%;
+      height: 90vh;
+      border: 2px solid lightgray;
+      background-color: hsla(0, 0%, 75%, 0.75);
+      border: 1px solid lightgray;
+    }
+  </style>
+{% endblock CSS_INCLUDES %}
+
+{% block content %}
+<div class="jumbotron bg-dark jumbotron-fluid m-0 pb-3" style="height:100%;">
+
+    <!--Host ID-->
+    <div class="container">
+        <h3 class="text-center text-light">{{host_id}}</h3>
+    </div>
+
+    <!--Host Information and actions-->
+    <div class="card m-3">
+        <div class="card-header"><strong>Host Command & Control</strong></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-6">
+                    <p class="card-text">
+                    This host is running <strong>{{host_os_type}}</strong> OS.<br>
+                    Agent ID: <strong>{{agent_id}}</strong><br>
+                    Registered at <strong>{{date_registered|date:"Y-m-d/H:i:s"}}</strong>, and last modified at <strong>{{date_modified|date:"Y-m-d/H:i:s"}}</strong><br>
+                    Last time seen online at <strong>{{last_online|date:"Y-m-d - H:i:s"}}</strong> (Status: {% if online_status %}Online{% else %}Offline{% endif %})<br>
+                    Estimated host health: <strong>{{host_health}}</strong><br>
+                    </p>
+                </div>
+                <div class="col-6">
+                    <div class="row m-1">
+                        <div class="col-6">
+                            <button class="btn btn-block w-100 btn-primary" role="button" id="open_shell_btn">Open Shell</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-block w-100 btn-primary" role="button" id="open_system_resource_monitor_btn">Start System Resource Monitor</button>
+                        </div>
+                    </div>
+                    <div class="row m-1">
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_program_data_btn">Get program data</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_process_data_btn">Get process data</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_passwd_data_btn">Get passwd data</button>
+                        </div>
+                    </div>
+                    <div class="row m-1">
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_privesc_audit_btn">Run privesc audit</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_system_info_btn">Get system info</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_network_information_btn">Get network info</button>
+                        </div>
+                    </div>
+                    <div class="row m-1">
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="run_network_mapper_btn">Run network mapper</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="run_eventlog_collector_btn">Run eventlog collector</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-block w-100 btn-primary" role="button" id="get_scheduled_tasks_btn">Get scheduled tasks</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="terminal" class="pt-2 pb-2" style="width:100%;height:76vh;"></div>
+        </div>
+    </div>
+
+    <!--Host Systeminfo-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host System Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_systeminfo_body" role="button" aria-expanded="false" id="host_systeminfo_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_systeminfo_body">
+            <pre class="overflow-scroll" style="height:90vh; color:lime; background-color:black; font-family:Inconsolata,monospace; line-height:normal;">{{system_info}}</pre>
+        </div>
+    </div>
+
+    <!--Host Settings-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Settings</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_settings_body" role="button" aria-expanded="false" id="host_settings_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_settings_body">
+            <form action="#">
+                <div class="row m-1">
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="CENTRAL_MONITOR_ID" name="CENTRAL_MONITOR_ID" placeholder="CENTRAL_MONITOR_ID" required value="{{settings.CENTRAL_MONITOR_ID}}" readonly>
+                        <label for="CENTRAL_MONITOR_ID" class="">Central monitor ID</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="CENTRAL_MONITOR_BASE_URL" name="CENTRAL_MONITOR_BASE_URL" placeholder="CENTRAL_MONITOR_BASE_URL" required value="{{settings.CENTRAL_MONITOR_BASE_URL}}">
+                        <label for="CENTRAL_MONITOR_BASE_URL" class="">Central monitor base URL</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="AGENT_AUTH_USERNAME" name="AGENT_AUTH_USERNAME" placeholder="AGENT_AUTH_USERNAME" required value="{{settings.AGENT_AUTH_USERNAME}}" readonly>
+                        <label for="AGENT_AUTH_USERNAME" class="">Agent auth username</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="AGENT_AUTH_PASSWORD" name="AGENT_AUTH_PASSWORD" placeholder="AGENT_AUTH_PASSWORD" required value="{{settings.AGENT_AUTH_PASSWORD}}" readonly>
+                        <label for="AGENT_AUTH_PASSWORD" class="">Agent auth password</label>
+                    </div>
+                </div>
+
+                <div class="row m-1">
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="SYSTEM_MONITOR_PORT" name="SYSTEM_MONITOR_PORT" placeholder="SYSTEM_MONITOR_PORT" required value="{{settings.SYSTEM_MONITOR_PORT}}">
+                        <label for="SYSTEM_MONITOR_PORT" class="">System monitor port</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="NETWORK_INFO_UPDATES_FREQ" name="NETWORK_INFO_UPDATES_FREQ" placeholder="NETWORK_INFO_UPDATES_FREQ" required value="{{settings.NETWORK_INFO_UPDATES_FREQ}}">
+                        <label for="NETWORK_INFO_UPDATES_FREQ" class="">Network info updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="EVENT_LOGS_UPDATES_FREQ" name="EVENT_LOGS_UPDATES_FREQ" placeholder="EVENT_LOGS_UPDATES_FREQ" required value="{{settings.EVENT_LOGS_UPDATES_FREQ}}">
+                        <label for="EVENT_LOGS_UPDATES_FREQ" class="">Event logs updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="PROC_DATA_UPDATES_FREQ" name="PROC_DATA_UPDATES_FREQ" placeholder="PROC_DATA_UPDATES_FREQ" required value="{{settings.PROC_DATA_UPDATES_FREQ}}">
+                        <label for="PROC_DATA_UPDATES_FREQ" class="">Process data updates freq</label>
+                    </div>
+                </div>
+
+                <div class="row m-1">
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="SYSTEM_INFO_UPDATES_FREQ" name="SYSTEM_INFO_UPDATES_FREQ" placeholder="SYSTEM_INFO_UPDATES_FREQ" required value="{{settings.SYSTEM_INFO_UPDATES_FREQ}}">
+                        <label for="SYSTEM_INFO_UPDATES_FREQ" class="">System info updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="NMAP_UPDATES_FREQ" name="NMAP_UPDATES_FREQ" placeholder="NMAP_UPDATES_FREQ" required value="{{settings.NMAP_UPDATES_FREQ}}">
+                        <label for="NMAP_UPDATES_FREQ" class="">Network map updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="PROG_DATA_UPDATES_FREQ" name="PROG_DATA_UPDATES_FREQ" placeholder="PROG_DATA_UPDATES_FREQ" required value="{{settings.PROG_DATA_UPDATES_FREQ}}">
+                        <label for="PROG_DATA_UPDATES_FREQ" class="">Program data updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="SCHEDULED_TASKS_UPDATES_FREQ" name="SCHEDULED_TASKS_UPDATES_FREQ" placeholder="SCHEDULED_TASKS_UPDATES_FREQ" required value="{{settings.SCHEDULED_TASKS_UPDATES_FREQ}}">
+                        <label for="SCHEDULED_TASKS_UPDATES_FREQ" class="">Scheduled tasks updates freq</label>
+                    </div>
+                </div>
+
+                <div class="row m-1">
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="PASSWD_DATA_UPDATES_FREQ" name="PASSWD_DATA_UPDATES_FREQ" placeholder="PASSWD_DATA_UPDATES_FREQ" required value="{{settings.PASSWD_DATA_UPDATES_FREQ}}">
+                        <label for="PASSWD_DATA_UPDATES_FREQ" class="">Passwords data updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="PRIVESC_UPDATES_FREQ" name="PRIVESC_UPDATES_FREQ" placeholder="PRIVESC_UPDATES_FREQ" required value="{{settings.PRIVESC_UPDATES_FREQ}}">
+                        <label for="PRIVESC_UPDATES_FREQ" class="">Privesc updates freq</label>
+                    </div>
+                    <div class="form-floating col-3 p-1">
+                        <input type="text" class="form-control" id="EXPLOIT_UPDATES_FREQ" name="EXPLOIT_UPDATES_FREQ" placeholder="EXPLOIT_UPDATES_FREQ" required value="{{settings.EXPLOIT_UPDATES_FREQ}}">
+                        <label for="EXPLOIT_UPDATES_FREQ" class="">Exploit suggestor updates freq</label>
+                    </div>
+                </div>
+
+                <div class="form-group row m-1">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-primary btn-block w-100 mt-1" id="save_settings_button">Save Settings</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Host Programs Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Programs Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_programs_body" role="button" aria-expanded="false" id="host_programs_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_programs_body">
+            <table class="table table-sm table-striped table-light table-hover table-bordered" id="program_table" style="width:100%;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Program Name</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Program Install Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for display_name, install_location in program_info %}
+                    <tr>
+                        <td>{{display_name}}</td>
+                        <td>{{install_location}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Host Processes Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Processes Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_processes_body" role="button" aria-expanded="false" id="host_processes_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_processes_body">
+            <table class="table table-sm table-striped table-light table-hover table-bordered" id="process_table" style="width:100%;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Path to Excutable</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">PID</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">VirusToal Analysis</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Harmless</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Suspicious</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Malicious</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">Undetected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for path, id, checksum, VT_link, total_analysis_cnt, harmless_cnt, suspicious_cnt, malicious_cnt, undetected_cnt in process_info %}
+                    <tr>
+                        <td>{{path}}</td>
+                        <td style="text-align: center; vertical-align: middle;">{{id}}</td>
+                        <td style="text-align: center; vertical-align: middle;">{% if VT_link != 'unknown' %}<a href="{{VT_link}}" target='_blank'><i class="fas fa-clipboard-list"></i></a>{% else %}N/A{% endif %}</td>
+                        <td style="text-align: center; vertical-align: middle;">{% if total_analysis_cnt != 'unknown' %}{{harmless_cnt}}/{{total_analysis_cnt}}{% else %}N/A{% endif %}</td>
+                        <td style="text-align: center; vertical-align: middle;">{% if total_analysis_cnt != 'unknown' %}{{suspicious_cnt}}/{{total_analysis_cnt}}{% else %}N/A{% endif %}</td>
+                        <td style="text-align: center; vertical-align: middle;">{% if total_analysis_cnt != 'unknown' %}{{malicious_cnt}}/{{total_analysis_cnt}}{% else %}N/A{% endif %}</td>
+                        <td style="text-align: center; vertical-align: middle;">{% if total_analysis_cnt != 'unknown' %}{{undetected_cnt}}/{{total_analysis_cnt}}{% else %}N/A{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Host Passwords Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Passwords Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_passwd_body" role="button" aria-expanded="false" id="host_passwd_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_passwd_body">
+            <pre class="overflow-scroll" style="height:90vh; color:lime; background-color:black; font-family:Inconsolata,monospace; line-height:normal;">{{password_info_plain}}</pre>
+            <div id="host_hash_tree" class="bstreeview"></div>
+        </div>
+    </div>
+
+    <!--Privelege Escalation Script Result-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Privelege Escalation Script Result (Winpeas)</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#privesc_result_body" role="button" aria-expanded="false" id="privesc_result_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="privesc_result_body">
+            <pre class="overflow-scroll" style="height:90vh; color:white; background-color:black; font-family:Inconsolata,monospace; line-height:normal;">{{privesc_info | safe}}</pre>
+        </div>
+    </div>
+
+    <!--Exploit Suggestor Script Result-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Exploit Suggestions (wesng)</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#exploit_suggestions_body" role="button" aria-expanded="false" id="exploit_suggestions_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="exploit_suggestions_body">
+            <pre class="overflow-scroll" style="height:90vh; color:lime; background-color:black; font-family:Inconsolata,monospace; line-height:normal;">{{exploit_info}}</pre>
+        </div>
+    </div>
+
+    <!--Host Network Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Network Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_network_info_body" role="button" aria-expanded="false" id="host_network_info_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_network_info_body">
+            <pre class="overflow-scroll" style="height:90vh; color:lime; background-color:black; font-family:Inconsolata,monospace; line-height:normal;">
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">Mac Addresses</strong></h6>{{all_local_mac_addresses}}<hr>
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">IP Information</strong></h6>{{ip_info}}<hr>
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">DNS Cache</strong></h6>{{dns_cache}}<hr>
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">ARP cache</strong></h6>{{arp_cache}}<hr>
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">Routing Table</strong></h6>{{routing_table}}<hr>
+                <h6 class="container-fluid d-flex justify-content-center"><strong style="color:red;">Active Ports</strong></h6>{{active_ports}}
+            </pre>
+        </div>
+    </div>
+
+    <!--Host Neighbor Map-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Host Neighbor Map</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#host_neighbor_map_body" role="button" aria-expanded="false" id="host_neighbor_map_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="host_neighbor_map_body">
+            <div id="hostNeighborMap"></div>
+        </div>
+    </div>
+
+    <!--Event Log Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Event Log Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#event_log_body" role="button" aria-expanded="false" id="event_log_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="event_log_body">
+            <table class="table table-sm table-striped table-light table-hover table-bordered" id="eventlog_table" style="width:100%;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">TimeCreated</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">LogName</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">ProviderName</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">ID</th>
+                        <th style="text-align: center; vertical-align: middle;" scope="col">LevelDisplayName</th>
+                        <!--<th scope="col">Message</th>-->
+                    </tr>
+                </thead>
+                <tbody>
+                {% for eventlog in eventlog_info %}
+                    <tr>
+                        <td>{{eventlog.0}}</td>
+                        <td>{{eventlog.1}}</td>
+                        <td>{{eventlog.2}}</td>
+                        <td>{{eventlog.3}}</td>
+                        <td>{{eventlog.4}}</td>
+                        <!--<td>{{eventlog.5}}</td>-->
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Scheduled Tasks Information-->
+    <div class="card m-3">
+        <div class="row card-header">
+            <strong class="col-11">Scheduled Tasks Information</strong>
+            <a class="col-1 btn btn-sm btn-outline-primary" data-bs-toggle="collapse" href="#scheduled_tasks_body" role="button" aria-expanded="false" id="scheduled_tasks_button">Show</a>
+        </div>
+        <div class="card-body collapse" id="scheduled_tasks_body">
+            <table class="table table-sm table-striped table-light table-hover table-bordered" id="scheduled_tasks_table">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">State</th>
+                        <!--<th scope="col">Actions</th>-->
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Author</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Date</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Description</th>
+                        <!--<th scope="col">Documentation</th>-->
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Principal</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">SecurityDescriptor</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Settings</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">Source</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">TaskName</th>
+                        <th style="text-align: center; vertical-align: middle;"scope="col">TaskPath</th>
+                        <!--<th scope="col">Triggers</th>-->
+                        <th style="text-align: center; vertical-align: middle;"scope="col">URI</th>
+                        <!--<th scope="col">Version</th>-->
+                        <!--<th scope="col">PSComputerName</th>-->
+                    </tr>
+                </thead>
+                <tbody>
+                {% for scheduled_task in schedtask_info %}
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.0}}</td>
+                            <!--<td>{{scheduled_task.1}}</td>-->
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.2}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.3}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.4}}</td>
+                            <!--<td>{{scheduled_task.5}}</td>-->
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.6}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.7}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.8}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.9}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.10}}</td>
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.11}}</td>
+                            <!--<td>{{scheduled_task.12}}</td>-->
+                            <td style="text-align: center; vertical-align: middle;">{{scheduled_task.13}}</td>
+                            <!--<td>{{scheduled_task.14}}</td>-->
+                            <!--<td>{{scheduled_task.15}}</td>-->
+                        </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;">State</th>
+                        <!--<th>Actions</th>-->
+                        <th style="text-align: center; vertical-align: middle;">Author</th>
+                        <th style="text-align: center; vertical-align: middle;">Date</th>
+                        <th style="text-align: center; vertical-align: middle;">Description</th>
+                        <!--<th>Documentation</th>-->
+                        <th style="text-align: center; vertical-align: middle;">Principal</th>
+                        <th style="text-align: center; vertical-align: middle;">SecurityDescriptor</th>
+                        <th style="text-align: center; vertical-align: middle;">Settings</th>
+                        <th style="text-align: center; vertical-align: middle;">Source</th>
+                        <th style="text-align: center; vertical-align: middle;">TaskName</th>
+                        <th style="text-align: center; vertical-align: middle;">TaskPath</th>
+                        <!--<th>Triggers</th>-->
+                        <th style="text-align: center; vertical-align: middle;">URI</th>
+                        <!--<th>Version</th>-->
+                        <!--<th>PSComputerName</th>-->
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block JS_INCLUDES %}
+    <!--Data Tables-->
+    <script>
+        $(document).ready(function(){ $('#program_table').DataTable();});
+        $(document).ready(function(){ $('#process_table').DataTable();});
+        $(document).ready(function(){ $('#eventlog_table').DataTable();});
+        $(document).ready(function() {
+            // Setup - add a text input to each footer cell
+            $('#scheduled_tasks_table tfoot th').each( function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search '+title+'" />');
+            });
+            // Datatable
+            var table = $('#scheduled_tasks_table').DataTable({
+                "scrollX": true,
+                initComplete: function () {
+                    // Apply the search
+                    this.api().columns().every( function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function() {
+                            if (that.search() !== this.value) {that.search(this.value).draw();}
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!--Bootstrap Tree View-->
+    <script type="text/javascript" src="{% static 'JS/bstreeview.min.js' %}"></script>
+    <script>
+        // https://www.jqueryscript.net/other/collapsible-tree-bootstrap.html
+        var hash_tree_data = [
+        {% for hash_type, hashes in password_info_processed.items %}
+            {text: "<i class='bi bi-hash bold'></i> {{hash_type}}",
+            nodes: [
+            {% for passwd_hash, passwd_plain in hashes.items %}
+                {text: "<i class='bi bi-key'></i> {{passwd_hash}}<i class='bi bi-dash-lg p-3'></i>{% if passwd_plain == None %}{{passwd_plain}} <span class='badge bg-success'>Safe</span>{% else %}{{passwd_plain}} <span class='badge bg-danger'>Cracked</span>{% endif %}"},
+            {% endfor %}
+            ]},
+        {% endfor %}
+        ]
+
+        $('#host_hash_tree').bstreeview({ 
+            data: hash_tree_data
+        });
+
+        $('#host_hash_tree').bstreeview({ 
+            expandIcon: 'fa fa-angle-down',
+            collapseIcon: 'fa fa-angle-right'
+        });
+
+    </script>
+
+    <!--VIS Network-->
+    <script type="text/javascript" src="{% static 'JS/vis-network.min.js' %}"></script>
+    <script>
+        // create an array with nodes
+        var nodes = new vis.DataSet([
+        {% for ID, LABEL, TITLE, FIXED in nmap_info.nodes %}
+            { id: {{ID}}, label: "{{LABEL}}".split("||").join("\n"), title: "{{TITLE}}", shape: "box", fixed: {% if FIXED %}true{% else %}false{% endif %}, color: {% if FIXED %}"#ffcb2e"{% else %}"#4287f5"{% endif %} },
+        {% endfor %}
+        ]);
+
+        // create an array with edges
+        var edges = new vis.DataSet([
+        {% for FROM, TO in nmap_info.edges %}
+            { from: {{FROM}}, to: {{TO}} },
+        {% endfor %}
+        ]);
+
+        // create a network
+        var container = document.getElementById("hostNeighborMap");
+        var data = {nodes:nodes, edges:edges,};
+        var options = { edges:{ smooth: {type: "dynamic", roundness: 1}, arrows: { to: { enabled: true, scaleFactor: 0.5, type: "arrow" } } }, physics: true };
+        var network = new vis.Network(container, data, options);
+        var map_view_fixed = false;
+    </script>
+
+    <!--Button On-clicks-->
+    <script>
+        $("#host_systeminfo_button").on("click", function(){
+            if ($("#host_systeminfo_button").text() == "Hide"){
+                $("#host_systeminfo_button").prop("text", "Show");
+            } else {
+                $("#host_systeminfo_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_systeminfo_button").offset().top});
+            }
+        });
+        $("#host_settings_button").on("click", function(){
+            if ($("#host_settings_button").text() == "Hide"){
+                $("#host_settings_button").prop("text", "Show");
+            } else {
+                $("#host_settings_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_settings_button").offset().top});
+            }
+        });
+        $("#host_programs_button").on("click", function(){
+            if ($("#host_programs_button").text() == "Hide"){
+                $("#host_programs_button").prop("text", "Show");
+            } else {
+                $("#host_programs_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_programs_button").offset().top});
+            }
+        });
+        $("#host_processes_button").on("click", function(){
+            if ($("#host_processes_button").text() == "Hide"){
+                $("#host_processes_button").prop("text", "Show");
+            } else {
+                $("#host_processes_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_processes_button").offset().top});
+            }
+        });
+        $("#host_passwd_button").on("click", function(){
+            if ($("#host_passwd_button").text() == "Hide"){
+                $("#host_passwd_button").prop("text", "Show");
+            } else {
+                $("#host_passwd_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_passwd_button").offset().top});
+            }
+        });
+        $("#privesc_result_button").on("click", function(){
+            if ($("#privesc_result_button").text() == "Hide"){
+                $("#privesc_result_button").prop("text", "Show");
+            } else {
+                $("#privesc_result_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#privesc_result_button").offset().top});
+            }
+        });
+        $("#exploit_suggestions_button").on("click", function(){
+            if ($("#exploit_suggestions_button").text() == "Hide"){
+                $("#exploit_suggestions_button").prop("text", "Show");
+            } else {
+                $("#exploit_suggestions_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#exploit_suggestions_button").offset().top});
+            }
+        });
+        $("#host_network_info_button").on("click", function(){
+            if ($("#host_network_info_button").text() == "Hide"){
+                $("#host_network_info_button").prop("text", "Show");
+            } else {
+                $("#host_network_info_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_network_info_button").offset().top});
+            }
+        });
+        $("#host_neighbor_map_button").on("click", function(){
+            if ($("#host_neighbor_map_button").text() == "Hide"){
+                $("#host_neighbor_map_button").prop("text", "Show");
+            } else {
+                $("#host_neighbor_map_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#host_neighbor_map_button").offset().top});
+                if (!map_view_fixed){
+                    // https://github.com/almende/vis/issues/871#issuecomment-105324240
+                    var translation = network.view.targetTranslation;
+                    network.moveTo({
+                        position: {x:0, y:0},
+                        scale: 1.0,
+                        offset: translation
+                      });
+                    map_view_fixed = true;
+                }
+            }
+        });
+        $("#event_log_button").on("click", function(){
+            if ($("#event_log_button").text() == "Hide"){
+                $("#event_log_button").prop("text", "Show");
+            } else {
+                $("#event_log_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#event_log_button").offset().top});
+            }
+        });
+        $("#scheduled_tasks_button").on("click", function(){
+            if ($("#scheduled_tasks_button").text() == "Hide"){
+                $("#scheduled_tasks_button").prop("text", "Show");
+            } else {
+                $("#scheduled_tasks_button").prop("text", "Hide");
+                $('html, body').animate({scrollTop: $("#scheduled_tasks_button").offset().top});
+            }
+        });
+    </script>
+
+    <!--Xterm JS-->
+    <script type="text/javascript" src="{% static 'JS/xterm3.js' %}"></script>
+    <script>
+        // https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies
+        function ws_connect() {
+            ws = new WebSocket("ws://{{CENTRAL_MONITOR_BASE_URL}}/ws/host_control/");
+            // take action when data is received from socket
+            ws.onmessage = msg => {
+                let json_data_obj = JSON.parse(msg.data);
+                if (json_data_obj.success == true) {
+                    if ("shell_manager_action" in json_data_obj) {
+                        if (json_data_obj.shell_manager_action == "start") {
+                            $("#open_shell_btn").html("Close Shell");
+                            $("#open_shell_btn").addClass("btn-danger");
+                            $("#open_shell_btn").removeClass("btn-primary");
+                            // setup xterm.js terminal
+                            $("#terminal").show();
+                        } else if (json_data_obj.shell_manager_action == "stop") {
+                            $("#open_shell_btn").html("Open Shell");
+                            $("#open_shell_btn").addClass("btn-primary");
+                            $("#open_shell_btn").removeClass("btn-danger");
+                            // dispose of xterm.js terminal
+                            $("#terminal").hide();
+                        } else if (json_data_obj.shell_manager_action == "send_cmd") {
+                            // do nothing
+                        }
+                    } else if ("shell_line" in json_data_obj) {
+                        term.write(json_data_obj.shell_line);
+                        curr_line = "";
+                    } else if ("sysmon_manager_action" in json_data_obj) {
+                        if (json_data_obj.sysmon_manager_action == "start") {
+                            toastr["success"]("SYSTEM RESOURCE MONITOR IS STARTING... A new window will open when ready. Please be patient.");
+                            $("#open_system_resource_monitor_btn").html("Stop System Resource Monitor");
+                            $("#open_system_resource_monitor_btn").addClass("btn-danger");
+                            $("#open_system_resource_monitor_btn").removeClass("btn-primary");
+                            $("#open_system_resource_monitor_btn").prop("disabled", true );
+                            intervalId = setInterval(function() {
+                                let data = { host_id: "{{host_id}}", action: "system_monitor", sysmon_manager_action: "keep_up" };
+                                ws.send(JSON.stringify(data));
+                            }, 60000); //send keepalive message for system monitor every 60 seconds
+                            setTimeout(function () {
+                                $("#open_system_resource_monitor_btn").prop("disabled", false );
+                                window.open(`http://${json_data_obj.host_ip}:{{settings.SYSTEM_MONITOR_PORT}}`, "_blank");
+                            }, 60000);
+                        } else if (json_data_obj.sysmon_manager_action == "stop") {
+                            $("#open_system_resource_monitor_btn").html("Start System Resource Monitor");
+                            $("#open_system_resource_monitor_btn").addClass("btn-primary");
+                            $("#open_system_resource_monitor_btn").removeClass("btn-danger");
+                            clearInterval(intervalId);
+                        }
+                    } else if ("command_id" in json_data_obj) {
+                        toastr["success"](`Command [${json_data_obj.command_id}] was sent to the host.`)
+                    } else {
+                        toastr["success"](json_data_obj.data)
+                    }
+                } else {
+                    if ("shell_manager_action" in json_data_obj) { // this will be reached when socket connection to the host times out after 10 seconds
+                        $("#open_shell_btn").html("Open Shell");
+                        $("#open_shell_btn").addClass("btn-primary");
+                        $("#open_shell_btn").removeClass("btn-danger");
+                        // dispose of xterm.js terminal
+                        //term.dispose();
+                        term.write("\x1b[H\x1b[2J");
+                        $("#terminal").hide();
+                    } else {
+                        //console.log(json_data_obj);
+                        toastr["error"](json_data_obj.data);
+                    }
+                }
+            };
+
+            ws.onopen = function() {
+                toastr["success"]("Web Socket Connected.")
+            };
+
+            ws.onclose = function(e) {
+                console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                toastr["warning"]("Web Socket Disconnected.")
+                setTimeout(function() {
+                    ws_connect();
+                }, 1000);
+            };
+
+            ws.onerror = function(err) {
+                console.error('Socket encountered error: ', err.message, 'Closing socket');
+                toastr["error"]("Socket encountered an error. Closing socket.")
+                ws.close();
+            };
+        }
+        var ws;
+        var intervalId;
+        ws_connect();
+        
+        var term = new Terminal({
+            cursorBlink: true,
+            rows: 30,
+            cols: 160,
+        });
+        var curr_line = "";
+        var entries = [];
+        term.open(document.getElementById("terminal"));
+        term.prompt = () => {
+            if (curr_line) {
+                if (curr_line.trim() == "#TERMINATE#") {
+                    let data = { host_id: "{{host_id}}", action: "shell", shell_manager_action: "stop" };
+                    ws.send(JSON.stringify(data));
+                    term.clear();
+                } else {
+                    let data = { host_id: "{{host_id}}", action: "shell", shell_manager_action: "send_cmd", cmd: curr_line };
+                    ws.send(JSON.stringify(data));
+                }
+            }
+        };
+
+        term.on("key", function(key, ev) {
+            if (key.charCodeAt(0) === 3 && ev.keyCode === 67) { // ctrl+c (copy)
+                const elem = document.createElement('textarea');
+                elem.value = term.getSelection().toString();
+                document.body.appendChild(elem);
+                elem.select();
+                document.execCommand('copy');
+                document.body.removeChild(elem);
+            } else if (key.charCodeAt(0) === 3 && ev.keyCode === 67) { // ctrl+v (paste)
+                // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
+                // due to some limitations, cant paste text unless connected through https or to locallhost
+                // navigator.clipboard.readText().then(clipText => function(){
+                //     curr_line += clipText;
+                //     term.write(clipText);
+                // });
+                // 
+            } else if (ev.keyCode === 13) { //Enter
+                if (curr_line) {
+                entries.push(curr_line);
+                term.write("\r\n");
+                term.prompt();
+                }
+            } else if (ev.keyCode === 8) { // Backspace
+                if (curr_line) {
+                curr_line = curr_line.slice(0, curr_line.length - 1);
+                term.write("\b \b");
+                }
+            } else {
+                curr_line += key;
+                term.write(key);
+            }
+        });
+        $("#terminal").hide()
+        
+        $("#open_shell_btn").on("click", function(){
+            if ($("#open_shell_btn").html() == "Open Shell") {
+                term.clear();
+                let data = { host_id: "{{host_id}}", action: "shell", shell_manager_action: "start" };
+                ws.send(JSON.stringify(data));
+            } else if ($("#open_shell_btn").html() == "Close Shell") {
+                let data = { host_id: "{{host_id}}", action: "shell", shell_manager_action: "stop" };
+                ws.send(JSON.stringify(data));
+                term.clear();
+            }
+        });
+        $("#open_system_resource_monitor_btn").on("click", function(){
+            if ($("#open_system_resource_monitor_btn").html() == "Start System Resource Monitor") {
+                let data = { host_id: "{{host_id}}", action: "system_monitor", sysmon_manager_action: "start" };
+                ws.send(JSON.stringify(data));
+            } else if ($("#open_system_resource_monitor_btn").html() == "Stop System Resource Monitor") {
+                let data = { host_id: "{{host_id}}", action: "system_monitor", sysmon_manager_action: "stop" };
+                ws.send(JSON.stringify(data));
+            }
+        });
+        $("#get_program_data_btn"       ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "2" })); });
+        $("#get_process_data_btn"       ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "3" })); });
+        $("#get_passwd_data_btn"        ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "4" })); });
+        $("#get_privesc_audit_btn"      ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "5" })); });
+        $("#get_system_info_btn"        ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "8" })); });
+        $("#get_network_information_btn").on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "9" })); });
+        $("#run_network_mapper_btn"     ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "10" })); });
+        $("#run_eventlog_collector_btn" ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "11" })); });
+        $("#get_scheduled_tasks_btn"    ).on("click", function(){ ws.send(JSON.stringify({ host_id: "{{host_id}}", action: "command", command_id: "12" })); });
+    </script>
+
+    <!--AJAX-->
+    <script>
+        // function to get the CSRF token (https://docs.djangoproject.com/en/3.0/ref/csrf/#ajax)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+                }
+            }
+            return cookieValue;
+        }
+
+        // update settings
+        $("#save_settings_button").on("click", function(){
+            fetch("/host_detail/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify({
+                    host_id: "{{host_id}}",
+                    settings: {
+                        CENTRAL_MONITOR_ID: $("#CENTRAL_MONITOR_ID").val(),
+                        CENTRAL_MONITOR_BASE_URL: $("#CENTRAL_MONITOR_BASE_URL").val(),
+                        AGENT_AUTH_USERNAME: $("#AGENT_AUTH_USERNAME").val(),
+                        AGENT_AUTH_PASSWORD: $("#AGENT_AUTH_PASSWORD").val(),
+                        SYSTEM_MONITOR_PORT: $("#SYSTEM_MONITOR_PORT").val(),
+                        NETWORK_INFO_UPDATES_FREQ: $("#NETWORK_INFO_UPDATES_FREQ").val(),
+                        EVENT_LOGS_UPDATES_FREQ: $("#EVENT_LOGS_UPDATES_FREQ").val(),
+                        PROC_DATA_UPDATES_FREQ: $("#PROC_DATA_UPDATES_FREQ").val(),
+                        SYSTEM_INFO_UPDATES_FREQ: $("#SYSTEM_INFO_UPDATES_FREQ").val(),
+                        NMAP_UPDATES_FREQ: $("#NMAP_UPDATES_FREQ").val(),
+                        PROG_DATA_UPDATES_FREQ: $("#PROG_DATA_UPDATES_FREQ").val(),
+                        SCHEDULED_TASKS_UPDATES_FREQ: $("#SCHEDULED_TASKS_UPDATES_FREQ").val(),
+                        PASSWD_DATA_UPDATES_FREQ: $("#PASSWD_DATA_UPDATES_FREQ").val(),
+                        PRIVESC_UPDATES_FREQ: $("#PRIVESC_UPDATES_FREQ").val(),
+                        EXPLOIT_UPDATES_FREQ: $("#EXPLOIT_UPDATES_FREQ").val(),
+                    }
+                })
+            }).then(response => response.json()).then(data => {
+                if (data.success == true) {
+                    toastr["success"]("Settings Saved.")
+                } else if (data.success == false) {
+                    if (data.status_code == 404) {
+                        toastr["error"]("Host Not Found.")
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock JS_INCLUDES %}
