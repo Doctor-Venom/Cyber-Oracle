@@ -21,7 +21,7 @@ Versatile tool for purple teaming that can give vision in the network and on hos
 - scheduled tasks/cron jobs
 
 ## How To Use?
- NOTE: windows is preferred, because automation scripts (.bat) exists that facilitate the installation, support for linux will be added in the future.
+ NOTE: windows is preferred, because automation scripts (.bat) exist that facilitate the installation, support for linux will be added in the future.
 - clone the repository
 - make sure postgresql is installed, and create a database for the project
 - update database information in `source_code/central_monitor/central_monitorsettings.py` (username, passowrd, created database name)
@@ -36,7 +36,7 @@ Versatile tool for purple teaming that can give vision in the network and on hos
 - you are now ready to go. download and install the agents on hosts and do whatever you please.
 
 ## Notes
-* **This project requires alot of additional work and fine tuning, things are messed up.. but hey, at least it works! and eventually everything will be fixed and organized.
+* **This project requires alot of additional work and fine tuning, things are messed up.. but hey, at least it works! and eventually everything will be fixed and organized.**
 
 * **The central monitor can be a great target for attacks because it has all the information an attacker would dream about, and some kind of honeypot can be used to catch/identify attacks, so you can focus on one place which is most probably to be attacked**
 
