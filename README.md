@@ -1,6 +1,8 @@
 # Cyber-Oracle
 Versatile tool for purple teaming that can give vision in the network and on hosts, it can help identifying any weakpoints that could be used by adversaries to compromise the infrastructure.
 
+[![Cyberoracle Video](https://img.youtube.com/vi/srhLgZ_P5HU/0.jpg)](https://www.youtube.com/watch?v=srhLgZ_P5HU)
+
 ## Cyber Oracle is made of 2 main parts:
 1. The agents
 : an agent is a single binary that is installed on individual hosts on the network in order to collect information about them and their surrounding environment and send that info to the central monitor
